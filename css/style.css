@@ -1,0 +1,77 @@
+body {
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #34495e;
+  color: #ecf0f1;
+  letter-spacing: 2px;
+  font-family: "Montserrat","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: 700;
+}
+
+#pomodoro-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.control {
+  display: inline-flex;
+  margin: 0px 50px 0px 50px;
+}
+
+.control-length {
+  margin: 10px;
+}
+
+.control-label {
+  text-align: center;
+}
+
+#controls {
+  display: inline-flex;
+  font-size: 20px;
+}
+
+#start_stop {
+  margin-top: 20px;
+  height: 280px;
+  border: 10px solid lightgray;
+  overflow: hidden;
+  box-shadow: 0 0 3px gray;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 280px;
+  flex-direction: column;
+  letter-spacing: 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#timer-label, #time-left {
+  margin: 30px;
+  font-size: 35px;
+  color: white;
+}
+
+#reset {
+  color: white;
+}
+
+button {
+  border: none;
+  background-color: transparent;
+  color: #ecf0f1;
+  font-size: 20px;
+  cursor: pointer;
+  outline: none;
+}

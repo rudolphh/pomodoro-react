@@ -1,0 +1,247 @@
+/* Thanks to FCC and @no-stack-dub-sack (github) / @no_stack_sub_sack (codepen)
+ for his work on the example.  
+ 
+ Thanks to @maksad (codepen) for the inspiration of a fill timer http://codepen.io/maksad/pen/RpLxVB
+ 
+ Thanks to @kevinweber (codepen) for showing a sane way to fill
+ https://codepen.io/kevinweber/pen/QwgKMX?editors=0010
+ 
+ And ultimately thanks to my family for their love and support.  
+ 
+ */
+
+class Control extends React.Component {
+  constructor(props){
+    super(props);
+  }
+  
+  render(){
+    let name = this.props.name.toLowerCase();
+    let nameLabel = name + '-label';
+    let decrementLabel = name + '-decrement';
+    let incrementLabel = name + '-increment';
+    let lengthLabel = name + '-length';
+    return (
+      <div >
+        <div className='control-label'>
+          <label id={nameLabel} >{this.props.name}</label>
+        </div>
+        <div className='control'>
+          <button id={decrementLabel} 
+                  onClick={this.props.incDecHandler} 
+                  value='-'>-</button>
+          <div id={lengthLabel} 
+             className='control-length'>{this.props.length}</div>
+          <button id={incrementLabel} 
+                  onClick={this.props.incDecHandler} 
+                  value='+'>+</button>
+        </div>
+      </div>
+    );
+  } 
+}
+
+
+class Timer extends React.Component {
+  constructor(props){
+    super(props);
+  }
+  render(){
+    return (
+      <div id='start_stop' onClick={this.props.startStop} 
+           style={this.props.startStyle}>
+        <div id='timer-label'>
+          {this.props.timerType ? 'Session' : 'Break'}
+        </div>
+        <div id='time-left'>{this.props.clock}</div>
+        <button id='reset' onClick={this.props.reset} >
+          <i className="fa fa-refresh" aria-hidden="true"></i>
+        </button>
+      </div>
+    );
+  }
+}
+
+const sessionBg = '#2ecc71';
+const sessionFill = '#27ae60';
+const breakBg = '#3498db';
+const breakFill = '#2980b9';
+let timerBg = sessionBg;
+let timerFill = sessionFill; 
+
+class Pomodoro extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      timerTypeSession: true,
+      session: 25 ,
+      break: 5, 
+      timer: 1500,
+      running: false,
+      intervalID: -1,
+      timerFill : { background: 'linear-gradient('+ timerBg +' 100%, '+ timerFill + ' 100%)' }
+    }
+    this.handleClickSession = this.handleClickSession.bind(this);
+    this.handleClickBreak = this.handleClickBreak.bind(this);
+    this.handleClickStartStop = this.handleClickStartStop.bind(this);
+    this.handleClickReset = this.handleClickReset.bind(this);
+
+    this.switchTimer = this.switchTimer.bind(this);
+    this.convertTime = this.convertTime.bind(this);
+    this.checkTime = this.checkTime.bind(this);
+  }
+  
+  
+  handleClickSession (event) {
+    let op = event.target.value;
+    let sessionLen = this.state.session;
+    let running = this.state.running;
+    
+    if ( op === '-' &&  sessionLen > 1 && !running){
+      this.setState({
+        session: sessionLen-1,
+        timer: this.state.timer - 60
+      });
+    } else if (op === '+' && sessionLen < 60 && !running){
+      this.setState({
+        session: sessionLen+1,
+        timer: this.state.timer + 60
+      });
+    }
+  }  
+ 
+  handleClickBreak (event) {
+    let op = event.target.value;
+    let breakLen = this.state.break;
+    let running = this.state.running;
+    
+    if ( op === '-' &&  breakLen > 1 && !running){
+      this.setState({
+        break: breakLen-1,
+      });
+    } else if (op === '+' && breakLen < 60 && !running){
+      this.setState({
+        break: breakLen+1,
+      });
+    }
+  } 
+
+  switchTimer(){
+    const isSession = this.state.timerTypeSession;
+   
+    if(isSession){
+      
+      timerBg = sessionBg;
+      timerFill = sessionFill; 
+      this.setState({ 
+        timer: this.state.session * 60, 
+        intervalID: setInterval(this.checkTime, 1000),
+        timerFill : { background: 'linear-gradient('+ timerBg +' 100%, '+ timerFill + ' 100%)' }
+
+      });     
+    } else {
+      timerBg = breakBg;
+      timerFill = breakFill; 
+      this.setState({ 
+        timer: this.state.break * 60,
+        intervalID: setInterval(this.checkTime, 1000),
+        timerFill : { background: 'linear-gradient('+ timerBg +' 100%, '+ timerFill + ' 100%)' }
+
+      });    
+    }
+    
+  }
+  
+  convertTime() {
+    let minutes = Math.floor(this.state.timer/60); 
+    let seconds = this.state.timer - minutes * 60; 
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    return minutes + ':' + seconds;
+  }  
+  
+  checkTime(){
+   
+    if (this.state.timer === 0){ 
+      window.clearInterval(this.state.intervalID);
+      this.setState({ timerTypeSession: !this.state.timerTypeSession });
+      this.switchTimer();                     
+    } else {      
+      this.setState({ timer: this.state.timer - 1 });
+      
+      let isSession = this.state.timerTypeSession;
+      let initTotalSeconds = isSession ? this.state.session * 60 : this.state.break * 60;
+      let percentLeft = Math.floor((this.state.timer/ initTotalSeconds)*100);
+
+      let attrVal = 'linear-gradient(' + timerBg + ' ' + percentLeft; 
+      attrVal += '%, ' + timerFill + ' ' + percentLeft + '%)';
+      this.setState({ timerFill: { background : attrVal } }); 
+      
+      this.convertTime();
+    }
+  }
+  
+  handleClickStartStop(){ 
+    let running = this.state.running; 
+    this.setState({ running: !running });
+
+    if(running){ 
+      console.log('pause'); 
+      window.clearInterval(this.state.intervalID);
+      
+    } else { 
+      this.setState({ 
+        intervalID: setInterval(this.checkTime, 1000)
+      });
+    }
+  }
+  
+  handleClickReset(event){
+    event.stopPropagation();
+    console.log('reset');
+
+    timerBg = sessionBg; 
+    timerFill = sessionFill; 
+    clearInterval(this.state.intervalID);
+    
+    this.setState({
+      timerTypeSession: true,
+      session: 25 ,
+      break: 5, 
+      timer: 1500,
+      running: false,
+      intervalID: -1,
+      timerFill : { background: 'linear-gradient('+ timerBg +' 100%, '+ timerFill + ' 100%)' }
+    });
+    
+    
+  }
+  
+  render(){
+    return (
+      <div id='pomodoro-clock' >
+        <div id='controls'>
+        <Control name='session' 
+                 length={this.state.session} 
+                 incDecHandler={this.handleClickSession}
+        />
+        <Control name='break' 
+                 length={this.state.break} 
+                 incDecHandler={this.handleClickBreak}
+        />
+        </div>
+        <Timer timerType={this.state.timerTypeSession}
+               sessionLength={this.state.session}
+               breakLength={this.state.break} 
+               clock={this.convertTime()}
+               startStop={this.handleClickStartStop} 
+               reset={this.handleClickReset} 
+          
+               startStyle={this.state.timerFill}
+        />
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(<Pomodoro />, document.getElementById('root')); 
